@@ -1,0 +1,142 @@
+run:
+    timeout: 5m
+    tests: true
+    # Fail on new issues only when running in CI (remove this flag locally if desired)
+    # new-from-rev: HEAD~1
+
+linters:
+    disable-all: true
+    enable:
+      # --- Correctness ---
+      - govet # official go vet checks (shadowing, printf format, etc.)
+      - errcheck # unhandled error return values
+      - staticcheck # SA/S/ST rules: misuse of sync, deprecated APIs, unreachable code
+      - ineffassign # assignments whose result is never used
+      - typecheck # type-checks the code (mandatory)
+
+      # --- Security (OWASP / CWE) ---
+      - gosec # G201/G202 SQL injection, G401–G501 crypto, G304 file path traversal, etc.
+
+      # --- Database safety ---
+      - rowserrcheck # rows.Err() must be checked after SQL iteration
+      - sqlclosecheck # rows/statements must be closed
+
+      # --- HTTP safety ---
+      - bodyclose # HTTP response bodies must be closed
+      - noctx # http.NewRequest calls without context.Context
+
+      # --- Error-handling patterns ---
+      - nilerr # return nil, nil when err != nil is likely a bug
+      - errorlint # errors.Is / errors.As must be used instead of == / type assertion
+
+      # --- Style / Clean Code ---
+      - revive # idiomatic Go: var naming, exported comments, error strings, etc.
+      - misspell # spelling mistakes in comments and string literals
+      - gocritic # style, performance, and diagnostic hints
+
+      # --- Complexity ---
+      - cyclop # cyclomatic complexity per function
+      - gocognit # cognitive complexity (nested logic depth)
+
+      # --- Dead code / unused ---
+      - unused # exported and unexported symbols that are never used
+
+linters-settings:
+    # ---- gosec: security scanner ----
+    gosec:
+        severity: medium
+        confidence: medium
+        # Explicitly keep SQL injection rules at highest priority:
+        #   G201 – SQL query built with fmt.Sprintf / format string
+        #   G202 – SQL query built with string concatenation
+        #   G401–G402 – weak crypto
+        #   G304 – file path provided as taint input
+        #   G501 – import of crypto/md5
+        excludes: []
+        config:
+            # Treat any format-string SQL construction as HIGH severity
+            G201: HIGH
+            G202: HIGH
+
+    # ---- errcheck ----
+    errcheck:
+        check-type-assertions: true # flag ignored type assertion results
+        check-blank: false # allow _ = expr for intentional discards
+
+    # ---- staticcheck ----
+    staticcheck:
+        checks:
+          - "all"
+          - "-SA1019" # skip "deprecated" warnings (too noisy for dependencies)
+
+    # ---- revive: idiomatic Go ----
+    revive:
+        severity: warning
+        rules:
+          - name: var-naming
+          - name: exported
+          - name: error-return
+          - name: error-strings
+          - name: increment-decrement
+          - name: range
+          - name: blank-imports
+          - name: context-as-argument
+          - name: context-keys-type
+          - name: deep-exit
+          - name: defer
+          - name: early-return
+
+    # ---- gocritic ----
+    gocritic:
+        enabled-tags:
+          - diagnostic
+          - style
+          - performance
+        disabled-checks:
+          - paramTypeCombine # combines same-type params — hurts readability in ports
+          - unnamedResult # unnamed returns are fine in small helpers
+          - hugeParam # triggers on domain structs passed by value
+
+    # ---- cyclop: cyclomatic complexity ----
+    cyclop:
+        max-complexity: 15
+        package-average: 10
+        skip-tests: true
+
+    # ---- gocognit: cognitive complexity ----
+    gocognit:
+        min-complexity: 20
+
+    # ---- rowserrcheck ----
+    rowserrcheck:
+        packages:
+          - database/sql
+
+    # ---- errorlint ----
+    errorlint:
+        errorf: true
+        asserts: true
+        comparison: true
+
+issues:
+    exclude-rules:
+      # Test files: relax security and some style rules
+      - path: _test\.go
+        linters:
+          - gosec
+          - errcheck
+          - noctx
+          - bodyclose
+
+      # cmd/main.go: log.Fatal is acceptable at startup
+      - path: cmd/
+        linters:
+          - noctx
+
+      # Allow global vars used as constants (e.g. timeFormats slice in domain)
+      - linters:
+          - unused
+        text: "timeFormats"
+
+    max-issues-per-linter: 50
+    max-same-issues: 5

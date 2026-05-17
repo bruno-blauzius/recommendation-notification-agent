@@ -1,6 +1,8 @@
 module github.com/project-go-sender-recommendation-agent
 
-go 1.24
+go 1.26
+
+toolchain go1.26.3
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2

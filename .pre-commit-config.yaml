@@ -1,0 +1,62 @@
+default_install_hook_types:
+  - pre-commit
+
+repos:
+  # ---------------------------------------------------------------------------
+  # File hygiene
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [ --maxkb=500 ]
+      - id: mixed-line-ending
+        args: [ --fix=lf ]
+
+  # ---------------------------------------------------------------------------
+  # Go: format, module integrity, vulnerability scan
+  # ---------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: gofmt
+        name: gofmt
+        language: system
+        entry: gofmt -l -w
+        types: [ go ]
+
+      - id: go-mod-verify
+        name: go mod verify
+        description: Verifies that dependencies in go.sum match on-disk content.
+        language: system
+        entry: go mod verify
+        pass_filenames: false
+
+      - id: go-mod-tidy-check
+        name: go mod tidy (check)
+        description: Fails if go mod tidy would change go.mod or go.sum.
+        language: system
+        entry: bash -c 'cp go.sum go.sum.bak && go mod tidy && diff go.sum go.sum.bak; status=$?; rm -f go.sum.bak; exit $status'
+        pass_filenames: false
+
+      - id: govulncheck
+        name: govulncheck (vulnerable dependencies)
+        description: Reports known vulnerabilities in Go modules (golang.org/x/vuln).
+        language: golang
+        entry: govulncheck
+        args: [ ./... ]
+        additional_dependencies:
+          - golang.org/x/vuln/cmd/govulncheck@latest
+        pass_filenames: false
+
+  # ---------------------------------------------------------------------------
+  # Go: comprehensive linting + security (gosec, staticcheck, errcheck, etc.)
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v1.64.8
+    hooks:
+      - id: golangci-lint
+        args: [ --config=.golangci.yml, --timeout=5m ]
