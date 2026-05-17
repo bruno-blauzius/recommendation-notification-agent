@@ -15,7 +15,7 @@ import (
 
 const (
 	processingKeyPrefix = "processing:"
-	processingTTL       = 10 * time.Minute
+	processingTTL       = 3 * time.Minute
 )
 
 type sendRecommendationHandler struct {
@@ -47,10 +47,7 @@ func (h *sendRecommendationHandler) Handle(payload []byte) error {
 	// MD5 of the raw payload guarantees uniqueness per message content
 	// and avoids collisions that a bare ID alone could not prevent.
 	hash := md5.Sum([]byte(payload))
-
 	key := processingKeyPrefix + hex.EncodeToString(hash[:])
-
-	log.Printf("MD5 Key: %s", key)
 
 	exists, err := h.idempotency.Exists(key)
 	if err != nil {
