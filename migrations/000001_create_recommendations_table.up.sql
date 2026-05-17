@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS recommendations (
     id          VARCHAR(36) PRIMARY KEY,
     sender_id   VARCHAR(36) NOT NULL,
     payload     TEXT        NOT NULL,
-    score       NUMERIC(5, 4) NOT NULL DEFAULT 0,
+    score       NUMERIC(10, 2) NOT NULL DEFAULT 0,
     created_at  TIMESTAMP   NOT NULL DEFAULT NOW()
 );
 

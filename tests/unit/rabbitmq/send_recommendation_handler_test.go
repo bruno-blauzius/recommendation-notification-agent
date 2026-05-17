@@ -55,7 +55,7 @@ func TestSendRecommendationHandler_Handle_Success(t *testing.T) {
 	idm := &stubIdempotency{existsResult: false}
 	h := rabbitmq.NewSendRecommendationHandler(uc, idm)
 
-	payload := validPayload(t, domain.Recommendation{ID: "rec-1", SenderID: "s1", Payload: "data"})
+	payload := validPayload(t, domain.Recommendation{ID: "rec-1", SenderID: "s1", Payload: domain.RecommendationPayload{}})
 
 	if err := h.Handle(payload); err != nil {
 		t.Fatalf("unexpected error: %v", err)

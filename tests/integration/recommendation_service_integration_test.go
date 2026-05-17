@@ -47,7 +47,7 @@ func TestCreateAndRetrieve_Integration(t *testing.T) {
 	repo := newInMemoryRepo()
 	svc := usecases.NewRecommendationService(repo)
 
-	rec := &domain.Recommendation{ID: "int-1", SenderID: "sender-a", Payload: "data", Score: 0.9}
+	rec := &domain.Recommendation{ID: "int-1", SenderID: "sender-a", Payload: domain.RecommendationPayload{}, Score: 0.9}
 
 	if err := svc.Create(rec); err != nil {
 		t.Fatalf("Create failed: %v", err)
@@ -105,7 +105,7 @@ func TestIdempotencyFlow_Integration(t *testing.T) {
 		t.Fatalf("Set failed: %v", err)
 	}
 
-	rec := &domain.Recommendation{ID: "rec-42", SenderID: "sender-b", Payload: "payload"}
+	rec := &domain.Recommendation{ID: "rec-42", SenderID: "sender-b", Payload: domain.RecommendationPayload{}}
 	if err := svc.Create(rec); err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -137,9 +137,9 @@ func TestCreateMultipleAndRetrieveAll_Integration(t *testing.T) {
 	svc := usecases.NewRecommendationService(repo)
 
 	recs := []*domain.Recommendation{
-		{ID: "a", SenderID: "s1", Payload: "p1"},
-		{ID: "b", SenderID: "s2", Payload: "p2"},
-		{ID: "c", SenderID: "s3", Payload: "p3"},
+		{ID: "a", SenderID: "s1", Payload: domain.RecommendationPayload{}},
+		{ID: "b", SenderID: "s2", Payload: domain.RecommendationPayload{}},
+		{ID: "c", SenderID: "s3", Payload: domain.RecommendationPayload{}},
 	}
 
 	for _, r := range recs {

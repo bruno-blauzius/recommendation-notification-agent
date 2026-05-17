@@ -1,6 +1,8 @@
 package rabbitmq
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -28,6 +30,7 @@ func NewSendRecommendationHandler(useCase input.RecommendationUseCase, idempoten
 }
 
 func (h *sendRecommendationHandler) Handle(payload []byte) error {
+	log.Printf("sendRecommendationHandler: received payload %s", string(payload))
 	if len(payload) == 0 {
 		return fmt.Errorf("sendRecommendationHandler: empty payload")
 	}
@@ -41,8 +44,13 @@ func (h *sendRecommendationHandler) Handle(payload []byte) error {
 		return fmt.Errorf("sendRecommendationHandler: id is required")
 	}
 
-	// TODO: criar minha key usando o payload e convertendo em um MD5 ou SHA256 para evitar colisões e garantir unicidade
-	key := processingKeyPrefix + recommendation.ID
+	// MD5 of the raw payload guarantees uniqueness per message content
+	// and avoids collisions that a bare ID alone could not prevent.
+	hash := md5.Sum([]byte(payload))
+
+	key := processingKeyPrefix + hex.EncodeToString(hash[:])
+
+	log.Printf("MD5 Key: %s", key)
 
 	exists, err := h.idempotency.Exists(key)
 	if err != nil {

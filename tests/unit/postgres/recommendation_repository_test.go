@@ -32,7 +32,7 @@ func TestRecommendationRepository_Save_Success(t *testing.T) {
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	rec := &domain.Recommendation{ID: "1", SenderID: "s1", Payload: "data", Score: 0.9}
+	rec := &domain.Recommendation{ID: "1", SenderID: "s1", Payload: domain.RecommendationPayload{}, Score: 0.9}
 	if err := repo.Save(rec); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -63,7 +63,7 @@ func TestRecommendationRepository_FindByID_Found(t *testing.T) {
 
 	now := time.Now()
 	rows := sqlmock.NewRows([]string{"id", "sender_id", "payload", "score", "created_at"}).
-		AddRow("1", "s1", "data", 0.9, now)
+		AddRow("1", "s1", `{"cliente_descricao":"","perfil_identificado":"","recomendacoes":null}`, 0.9, now)
 
 	mock.ExpectQuery(`SELECT id, sender_id, payload, score, created_at FROM recommendations WHERE id`).
 		WithArgs("1").
@@ -122,8 +122,8 @@ func TestRecommendationRepository_FindAll_Success(t *testing.T) {
 
 	now := time.Now()
 	rows := sqlmock.NewRows([]string{"id", "sender_id", "payload", "score", "created_at"}).
-		AddRow("1", "s1", "data1", 0.9, now).
-		AddRow("2", "s2", "data2", 0.8, now)
+		AddRow("1", "s1", `{"cliente_descricao":"","perfil_identificado":"","recomendacoes":null}`, 0.9, now).
+		AddRow("2", "s2", `{"cliente_descricao":"","perfil_identificado":"","recomendacoes":null}`, 0.8, now)
 
 	mock.ExpectQuery(`SELECT id, sender_id, payload, score, created_at FROM recommendations ORDER BY`).
 		WillReturnRows(rows)

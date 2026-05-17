@@ -33,7 +33,7 @@ func Load() *Config {
 		DBSSLMode:     getEnv("DB_SSLMODE", "disable"),
 		ServerPort:    getEnv("SERVER_PORT", "8080"),
 		RabbitMQDSN:   getEnv("RABBITMQ_DSN", "amqp://guest:guest@localhost:5672/"),
-		RabbitMQQueue: getEnv("RABBITMQ_QUEUE", "send-recommendation"),
+		RabbitMQQueue: getEnv("RABBITMQ_QUEUE", "sender_recommendation_queue"),
 		RedisHost:     getEnv("REDIS_HOST", "localhost"),
 		RedisPort:     getEnv("REDIS_PORT", "6379"),
 		RedisUsername: getEnv("REDIS_USERNAME", ""),

@@ -37,7 +37,7 @@ func TestCreate_Success(t *testing.T) {
 	stub := &stubRecommendationRepo{}
 	svc := usecases.NewRecommendationService(stub)
 
-	rec := &domain.Recommendation{ID: "1", SenderID: "sender-a", Payload: "data"}
+	rec := &domain.Recommendation{ID: "1", SenderID: "sender-a", Payload: domain.RecommendationPayload{}}
 	if err := svc.Create(rec); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
