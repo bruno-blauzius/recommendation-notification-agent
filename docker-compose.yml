@@ -14,6 +14,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - recommendation-net
 
@@ -58,9 +60,35 @@ services:
     networks:
       - recommendation-net
 
+  redis:
+    image: redis:7-alpine
+    container_name: recommendation-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    command: >
+      sh -c '
+        if [ -n "$$REDIS_PASSWORD" ]; then
+          redis-server --requirepass "$$REDIS_PASSWORD";
+        else
+          redis-server;
+        fi'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - recommendation-net
+
 volumes:
   postgres_data:
   rabbitmq_data:
+  redis_data:
 
 networks:
   recommendation-net:
